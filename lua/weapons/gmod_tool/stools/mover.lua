@@ -41,6 +41,7 @@ TOOL.Ent = NULL
 TOOL.BasePos = NULL
 
 function TOOL:LeftClick(trace)
+    if CPPI and trace.Entity:CPPIGetOwner() ~= self.Owner then return false end
     if SERVER then
         if game.SinglePlayer() == true then
             net.Start(self.Name .. "_LeftClick")
@@ -158,7 +159,7 @@ function TOOL:RightClick(trace)
                 self.lat.planedir = dir + Vector()
             end
         end
-
+        local Lalt = input.IsKeyDown(KEY_LALT)
         if self.coordS > 0 then
             local vec = trace.HitPos - self.lat.pos
             local vec2
@@ -247,7 +248,6 @@ function TOOL:RightClick(trace)
             local val2, val3
             local ang = self.lat.ang + Angle()
             ang:Normalize()
-            local Lalt = Lalt
 
             if Lalt == false then
                 val2 = p1:Forward():Dot(amount)
@@ -313,7 +313,6 @@ function TOOL:RightClick(trace)
             end
 
             JG.stools.Data.mover.Ent:SetAngles(ang)
-            Lalt = Lalt
 
             if JG.stools.Data.mover.BasePos ~= NULL then
                 local vec = self.lat.mainpos - JG.stools.Data.mover.BasePos
@@ -711,12 +710,6 @@ function TOOL:Think()
             JG.stools.loadedP.mover = true
         end
     end
-end
-
-function TOOL:Deploy()
-end
-
-function TOOL:Holster()
 end
 
 if SERVER then
@@ -1362,7 +1355,4 @@ function TOOL:DrawHUD()
     self:Hud1()
     self:Hud2()
     self:Hud3()
-end
-
-function TOOL.BuildCPanel(cp)
 end
