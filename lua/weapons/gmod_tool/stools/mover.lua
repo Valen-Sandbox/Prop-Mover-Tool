@@ -5,9 +5,17 @@ TOOL.ConfigName = ""
 TOOL.MenuColor = Color(0, 220, 0, 255)
 
 if (CLIENT) then
+    TOOL.Information = {
+        { name = "left" },
+        { name = "right" },
+        { name = "reload" }
+    }
     language.Add("Tool.mover.name", "Prop Mover")
-    language.Add("Tool.mover.desc", "Allows precise prop placement, piggybacks off Precision Alignments functions.")
-    language.Add("Tool.mover.0", "Left: Select a prop, Shift+Left: Select a base point, Right: Grab axis, Shift+Right: Snap, R: Unselect")
+    language.Add("Tool.mover.desc", "Allows precise prop movement. Utilizes functions from Precision Alignment.")
+    language.Add("Tool.mover.left", "Select a prop - hold SPRINT to select a base point")
+    language.Add("Tool.mover.right", "Grab an axis - hold SPRINT to enable snapping")
+    language.Add("Tool.mover.reload", "Deselect prop")
+    --language.Add("Tool.mover.0", "Left: Select a prop, Shift+Left: Select a base point, Right: Grab axis, Shift+Right: Snap, R: Unselect")
     JG = JG or {}
     JG.stools = JG.stools or {}
     JG.stools.loadedP = JG.stools.loadedP or {}
