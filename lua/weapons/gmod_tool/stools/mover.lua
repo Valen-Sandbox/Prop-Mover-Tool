@@ -49,7 +49,7 @@ TOOL.Ent = NULL
 TOOL.BasePos = NULL
 
 function TOOL:LeftClick(trace)
-    if CPPI and trace.Entity:CPPIGetOwner() ~= self.Owner then return false end
+    if not game.SinglePlayer() and CPPI and trace.Entity:CPPIGetOwner() ~= self.Owner then return false end
     if SERVER then
         if game.SinglePlayer() == true then
             net.Start(self.Name .. "_LeftClick")
@@ -1307,54 +1307,34 @@ end
 TOOL.ratio = 0
 
 function TOOL:Hud2()
-    local SW = ScrW()
-    local str, font, col = "", "ChatFont", Color(0, 0, 0, 255)
-
-    if self.UseSnap then
-        col = Color(255, 0, 255, 255)
-        str = "Snap enabled"
-    else
-        col = Color(255, 255, 0, 255)
-        str = "Snap disabled"
-    end
-
-    local TAC = TEXT_ALIGN_CENTER
-    draw.SimpleText(str, font, SW - 50 * self.ratio, 150 * self.ratio, col, TAC, TAC)
-    str = "Right Click : "
-    draw.SimpleText(str, font, SW - 100 * self.ratio, 150 * self.ratio, col, TAC, TAC)
-
-    if self.UseSnap then
-        col = Color(127, 0, 255, 255)
-        str = "Select a base point"
-    else
-        col = Color(255, 127, 0, 255)
-        str = "Select a prop"
-    end
-
-    draw.SimpleText(str, font, SW - 50 * self.ratio, 160 * self.ratio, col, TAC, TAC)
-    str = "Left Click : "
-    draw.SimpleText(str, font, SW - 100 * self.ratio, 160 * self.ratio, col, TAC, TAC)
-end
-
-function TOOL:Hud3()
     local SW, SH = ScrW(), ScrH()
     local hSW, hSH = SW / 2, SH / 2
     local font, col = "ChatFont", Color(200, 0, 0, 240)
     local TAC = TEXT_ALIGN_CENTER
 
-    if PA_funcs == nil then
-        draw.SimpleText("Precision Alignment is not loaded!", font, hSW * self.ratio, 100 * self.ratio, col, TAC, TAC)
-        draw.SimpleText("Open Precision Alignment to enable full functionality.", font, hSW * self.ratio, 110 * self.ratio, col, TAC, TAC)
-    else
-        col = Color(0, 200, 0, 220)
-        draw.SimpleText("Precision Alignment is loaded.", font, hSW * self.ratio, 100 * self.ratio, col, TAC, TAC)
+    if not PA_funcs then
+        local col2 = Color((math.sin(SysTime() * 2) + 1) * 127.5, 0, 0)
+        draw.SimpleText("WARNING: Precision Alignment not loaded! Some features may not function properly!", "Trebuchet24", hSW, ScrH() / 4, col2, TAC)
+        draw.SimpleText("Open the Precision Alignment tool at least once before using this tool.", "Trebuchet24", hSW, ScrH() / 4 + 20, col2, TAC)
+    end
+end
+
+function TOOL:DrawToolScreen( width, height )
+    surface.SetDrawColor( Color( 20, 20, 20 ) )
+    surface.DrawRect( 0, 0, width, height )
+
+    if PA_funcs then
+        draw.SimpleText( "[PA Points/Lines]", "DermaLarge", width / 2, 24, Color( 200, 200, 200 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+
         local po, li = PA_selected_point, PA_selected_line
-        local str = "Selected Point Stack Index : " .. po .. " -> " .. tostring(type(PA_funcs.point_global(po)) == "table")
-        col = Color(220, 0, 0, 220)
-        draw.SimpleText(str, font, (hSW + 40) * self.ratio, hSH + 100 * self.ratio, col, TAC, TAC)
-        str = "Selected Line Stack Index : " .. li .. " - > " .. tostring(type(PA_funcs.line_global(li)) == "table") -- startpoint , endpoint
-        col = Color(0, 0, 220, 220)
-        draw.SimpleText(str, font, (hSW + 40) * self.ratio, hSH + 110 * self.ratio, col, TAC, TAC)
+        draw.SimpleText( "Selected Point Index:", "DermaLarge", width / 2, height / 2 - 64, Color( 200, 0, 0 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+        draw.SimpleText( po .. " -> " .. tostring(type(PA_funcs.point_global(po)) == "table"), "DermaLarge", width / 2, height / 2 - 32, Color( 200, 0, 0 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+
+        draw.SimpleText( "Selected Line Index:", "DermaLarge", width / 2, height / 2 + 32, Color( 0, 200, 0 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+        draw.SimpleText( li .. " -> " .. tostring(type(PA_funcs.point_global(li)) == "table"), "DermaLarge", width / 2, height / 2 + 64, Color( 0, 200, 0 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+    else
+        draw.SimpleText( "Precision Alignment", "DermaLarge", width / 2, height / 2 - 16, Color( 200, 0, 0 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
+        draw.SimpleText( "Not loaded!", "DermaLarge", width / 2, height / 2 + 16, Color( 200, 0, 0 ), TEXT_ALIGN_CENTER, TEXT_ALIGN_CENTER )
     end
 end
 
@@ -1362,5 +1342,4 @@ function TOOL:DrawHUD()
     if JG.stools.loadedP.mover == false then return end
     self:Hud1()
     self:Hud2()
-    self:Hud3()
 end
