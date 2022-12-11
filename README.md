@@ -6,3 +6,5 @@ Originally created by *Earth Element*.
 Translated by *Bingle*.
 
 Edited by *[Six](https://steamcommunity.com/profiles/76561198003824895)*.
+
+Original: https://steamcommunity.com/sharedfiles/filedetails/?id=1552367933
