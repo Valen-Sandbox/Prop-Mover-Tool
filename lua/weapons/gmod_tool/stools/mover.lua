@@ -48,10 +48,15 @@ TOOL.ClientConVar = {
 TOOL.Ent = NULL
 TOOL.BasePos = NULL
 
+local isSingleplayer = game.SinglePlayer()
+
 function TOOL:LeftClick(trace)
-    if not game.SinglePlayer() and CPPI and trace.Entity:CPPIGetOwner() ~= self.Owner then return false end
+    local owner = self:GetOwner()
+
+    if not isSingleplayer and CPPI and not trace.Entity:CPPICanTool(owner, "prop_mover") then return false end
+
     if SERVER then
-        if game.SinglePlayer() == true then
+        if isSingleplayer then
             net.Start(self.Name .. "_LeftClick")
             net.Send(player.GetHumans()[1])
         end
@@ -59,7 +64,7 @@ function TOOL:LeftClick(trace)
         return true
     end
 
-    if self.Owner:KeyDown(IN_SPEED) then
+    if owner:KeyDown(IN_SPEED) then
         if PA_funcs and PA_funcs.point_global(PA_selected_point) == false then
             JG.stools.Data.mover.BasePos = trace.HitPos
         else
@@ -105,7 +110,7 @@ local math = math
 
 function TOOL:RightClick(trace)
     if SERVER then
-        if game.SinglePlayer() == true then
+        if isSingleplayer then
             net.Start(self.Name .. "_RightClick")
             net.Send(player.GetHumans()[1])
         end
@@ -116,6 +121,7 @@ function TOOL:RightClick(trace)
     if JG.stools.Data.mover.Ent:IsValid() == false then return end
 
     if self.coordS > 0 or self.AngS > 0 then
+        local owner = self:GetOwner()
         local World = {
             x = Vector(1, 0, 0),
             y = Vector(0, -1, 0),
@@ -137,24 +143,24 @@ function TOOL:RightClick(trace)
                 if JG.stools.Data.mover.WL == false then
                     if self.AngS == 1 then
                         dir = JG.stools.Data.mover.Ent:GetForward()
-                        amount = self:IntersectRayWithPlane(self.lat.pos, dir, self.Owner:EyePos(), self.Owner:EyeAngles():Forward())
+                        amount = self:IntersectRayWithPlane(self.lat.pos, dir, owner:EyePos(), owner:EyeAngles():Forward())
                     elseif self.AngS == 2 then
                         dir = JG.stools.Data.mover.Ent:GetRight()
-                        amount = self:IntersectRayWithPlane(self.lat.pos, dir, self.Owner:EyePos(), self.Owner:EyeAngles():Forward())
+                        amount = self:IntersectRayWithPlane(self.lat.pos, dir, owner:EyePos(), owner:EyeAngles():Forward())
                     elseif self.AngS == 3 then
                         dir = JG.stools.Data.mover.Ent:GetUp()
-                        amount = self:IntersectRayWithPlane(self.lat.pos, dir, self.Owner:EyePos(), self.Owner:EyeAngles():Forward())
+                        amount = self:IntersectRayWithPlane(self.lat.pos, dir, owner:EyePos(), owner:EyeAngles():Forward())
                     end
                 else
                     if self.AngS == 1 then
                         dir = World.x
-                        amount = self:IntersectRayWithPlane(self.lat.pos, dir, self.Owner:EyePos(), self.Owner:EyeAngles():Forward())
+                        amount = self:IntersectRayWithPlane(self.lat.pos, dir, owner:EyePos(), owner:EyeAngles():Forward())
                     elseif self.AngS == 2 then
                         dir = World.y
-                        amount = self:IntersectRayWithPlane(self.lat.pos, dir, self.Owner:EyePos(), self.Owner:EyeAngles():Forward())
+                        amount = self:IntersectRayWithPlane(self.lat.pos, dir, owner:EyePos(), owner:EyeAngles():Forward())
                     elseif self.AngS == 3 then
                         dir = World.z
-                        amount = self:IntersectRayWithPlane(self.lat.pos, dir, self.Owner:EyePos(), self.Owner:EyeAngles():Forward())
+                        amount = self:IntersectRayWithPlane(self.lat.pos, dir, owner:EyePos(), owner:EyeAngles():Forward())
                     end
                 end
 
@@ -177,30 +183,30 @@ function TOOL:RightClick(trace)
             if JG.stools.Data.mover.WL == false then
                 if self.coordS == 1 then
                     dir = JG.stools.Data.mover.Ent:GetForward()
-                    vec = self:IntersectRayWithPlane(self.lat.pos + dir * self.dist, JG.stools.Data.mover.Ent:GetUp(), self.Owner:EyePos(), self.Owner:EyeAngles():Forward())
+                    vec = self:IntersectRayWithPlane(self.lat.pos + dir * self.dist, JG.stools.Data.mover.Ent:GetUp(), owner:EyePos(), owner:EyeAngles():Forward())
                 elseif self.coordS == 2 then
                     dir = JG.stools.Data.mover.Ent:GetRight()
-                    vec = self:IntersectRayWithPlane(self.lat.pos + dir * self.dist, JG.stools.Data.mover.Ent:GetUp(), self.Owner:EyePos(), self.Owner:EyeAngles():Forward())
+                    vec = self:IntersectRayWithPlane(self.lat.pos + dir * self.dist, JG.stools.Data.mover.Ent:GetUp(), owner:EyePos(), owner:EyeAngles():Forward())
                 elseif self.coordS == 3 then
                     dir = JG.stools.Data.mover.Ent:GetUp()
-                    local val1 = (self.lat.pos - self.Owner:EyePos()):Angle()
+                    local val1 = (self.lat.pos - owner:EyePos()):Angle()
                     val1.p = 0
                     val1 = val1:Forward()
-                    vec = self:IntersectRayWithPlane(self.lat.pos + dir * self.dist, val1, self.Owner:EyePos(), self.Owner:EyeAngles():Forward())
+                    vec = self:IntersectRayWithPlane(self.lat.pos + dir * self.dist, val1, owner:EyePos(), owner:EyeAngles():Forward())
                 end
             else
                 if self.coordS == 1 then
                     dir = World.x
-                    vec = self:IntersectRayWithPlane(self.lat.pos + dir * self.dist, World.z, self.Owner:EyePos(), self.Owner:EyeAngles():Forward())
+                    vec = self:IntersectRayWithPlane(self.lat.pos + dir * self.dist, World.z, owner:EyePos(), owner:EyeAngles():Forward())
                 elseif self.coordS == 2 then
                     dir = World.y
-                    vec = self:IntersectRayWithPlane(self.lat.pos + dir * self.dist, World.z, self.Owner:EyePos(), self.Owner:EyeAngles():Forward())
+                    vec = self:IntersectRayWithPlane(self.lat.pos + dir * self.dist, World.z, owner:EyePos(), owner:EyeAngles():Forward())
                 elseif self.coordS == 3 then
                     dir = World.z
-                    local val1 = (self.lat.pos - self.Owner:EyePos()):Angle()
+                    local val1 = (self.lat.pos - owner:EyePos()):Angle()
                     val1.p = 0
                     val1 = val1:Forward()
-                    vec = self:IntersectRayWithPlane(self.lat.pos + dir * self.dist, val1, self.Owner:EyePos(), self.Owner:EyeAngles():Forward())
+                    vec = self:IntersectRayWithPlane(self.lat.pos + dir * self.dist, val1, owner:EyePos(), owner:EyeAngles():Forward())
                 end
             end
 
@@ -210,7 +216,7 @@ function TOOL:RightClick(trace)
             vec2 = vec:Dot(dir)
             local var3 = vec2 * len + self.dist
 
-            if self.Owner:KeyDown(IN_SPEED) then
+            if owner:KeyDown(IN_SPEED) then
                 local val = JG.stools.CP.mover.DNumSlider[2]:GetValue()
                 local val2 = var3 < 0 and math.Round(var3 / val) * val or math.floor(var3 / val) * val
                 JG.stools.Data.mover.Ent:SetPos(self.lat.pos - dir * val2)
@@ -226,24 +232,24 @@ function TOOL:RightClick(trace)
             if JG.stools.Data.mover.WL == false then
                 if self.AngS == 1 then
                     dir = self.lat.ang:Forward()
-                    amount = self:IntersectRayWithPlane(self.lat.pos, dir, self.Owner:EyePos(), self.Owner:EyeAngles():Forward())
+                    amount = self:IntersectRayWithPlane(self.lat.pos, dir, owner:EyePos(), owner:EyeAngles():Forward())
                 elseif self.AngS == 2 then
                     dir = self.lat.ang:Right()
-                    amount = self:IntersectRayWithPlane(self.lat.pos, dir, self.Owner:EyePos(), self.Owner:EyeAngles():Forward())
+                    amount = self:IntersectRayWithPlane(self.lat.pos, dir, owner:EyePos(), owner:EyeAngles():Forward())
                 elseif self.AngS == 3 then
                     dir = self.lat.ang:Up()
-                    amount = self:IntersectRayWithPlane(self.lat.pos, dir, self.Owner:EyePos(), self.Owner:EyeAngles():Forward())
+                    amount = self:IntersectRayWithPlane(self.lat.pos, dir, owner:EyePos(), owner:EyeAngles():Forward())
                 end
             else
                 if self.AngS == 1 then
                     dir = World.x
-                    amount = self:IntersectRayWithPlane(self.lat.pos, dir, self.Owner:EyePos(), self.Owner:EyeAngles():Forward())
+                    amount = self:IntersectRayWithPlane(self.lat.pos, dir, owner:EyePos(), owner:EyeAngles():Forward())
                 elseif self.AngS == 2 then
                     dir = World.y
-                    amount = self:IntersectRayWithPlane(self.lat.pos, dir, self.Owner:EyePos(), self.Owner:EyeAngles():Forward())
+                    amount = self:IntersectRayWithPlane(self.lat.pos, dir, owner:EyePos(), owner:EyeAngles():Forward())
                 elseif self.AngS == 3 then
                     dir = World.z
-                    amount = self:IntersectRayWithPlane(self.lat.pos, dir, self.Owner:EyePos(), self.Owner:EyeAngles():Forward())
+                    amount = self:IntersectRayWithPlane(self.lat.pos, dir, owner:EyePos(), owner:EyeAngles():Forward())
                 end
             end
 
@@ -263,7 +269,7 @@ function TOOL:RightClick(trace)
                 amount = string.Left(amount, 3) == "nan" and 0 or amount
                 val3 = (val2 > 0 and 1 or -1)
 
-                if self.Owner:KeyDown(IN_SPEED) then
+                if owner:KeyDown(IN_SPEED) then
                     local val = JG.stools.CP.mover.DNumSlider[1]:GetValue()
                     local mon = amount * val3
                     mon = mon < 0 and math.ceil(mon / val) * val or math.floor(mon / val) * val
@@ -274,7 +280,7 @@ function TOOL:RightClick(trace)
 
                 self.amount = amount * val3
             else
-                if self.Owner:KeyDown(IN_SPEED) then
+                if owner:KeyDown(IN_SPEED) then
                     local val = JG.stools.CP.mover.DNumSlider[1]:GetValue()
                     local var0 = amount
                     local val0 = self.lat.planedir:Angle()
@@ -407,12 +413,13 @@ function TOOL:Think()
     if SERVER then return end
 
     if self.Hold then
+        local owner = self:GetOwner()
         self.la = true
 
         local tr = util.TraceLine({
-            start = self.Owner:EyePos(),
-            endpos = self.Owner:EyePos() + self.Owner:EyeAngles():Forward() * 50000,
-            filter = {self.Weapon, self.Owner, JG.stools.Data.mover.Ent}
+            start = owner:EyePos(),
+            endpos = owner:EyePos() + owner:EyeAngles():Forward() * 50000,
+            filter = {self, owner, JG.stools.Data.mover.Ent}
         })
 
         self:RightClick(tr)
@@ -442,7 +449,7 @@ function TOOL:Think()
     end
 
     if self.first == false then
-        net.Receive(self.Name .. "_LeftClick", function(leng, ply)
+        net.Receive(self.Name .. "_LeftClick", function()
             local EP, EA = EyePos(), EyeAngles()
             local forward = EA:Forward()
 
@@ -455,7 +462,7 @@ function TOOL:Think()
             self:LeftClick(tr)
         end)
 
-        net.Receive(self.Name .. "_RightClick", function(leng, ply)
+        net.Receive(self.Name .. "_RightClick", function()
             local EP, EA = EyePos(), EyeAngles()
             local forward = EA:Forward()
 
@@ -468,7 +475,7 @@ function TOOL:Think()
             self:RightClick(tr)
         end)
 
-        net.Receive(self.Name .. "_R", function(leng, ply)
+        net.Receive(self.Name .. "_R", function()
             local EP, EA = EyePos(), EyeAngles()
             local forward = EA:Forward()
 
@@ -511,7 +518,7 @@ function TOOL:Think()
                 Copy = false
             }
 
-            for k, v in pairs(self.panel:GetChildren()) do
+            for _, v in pairs(self.panel:GetChildren()) do
                 if v == self.panel then continue end
                 local x, y = v:GetPos()
                 local _, h = v:GetSize()
@@ -531,7 +538,7 @@ function TOOL:Think()
             t[1]:AddChoice("World")
             t[1]:AddChoice("Local")
 
-            t[1].OnSelect = function(panel, index, value, data)
+            t[1].OnSelect = function(_, index)
                 if index == 2 then
                     JG.stools.Data.mover.WL = false
                 else
@@ -591,7 +598,7 @@ function TOOL:Think()
             t[1]:SetSize(90, 40)
             t[1]:SetText("Reset BasePos")
 
-            t[1].DoClick = function(a)
+            t[1].DoClick = function()
                 JG.stools.Data.mover.BasePos = NULL
             end
 
@@ -601,7 +608,7 @@ function TOOL:Think()
             t[2]:SetSize(90, 40)
             t[2]:SetText("Reset Ent Info")
 
-            t[2].DoClick = function(a)
+            t[2].DoClick = function()
                 JG.stools.Data.mover.Ent = NULL
             end
 
@@ -618,7 +625,7 @@ function TOOL:Think()
             t[1]:SetMin(0)
             t[1]:SetValue(45)
 
-            t[1].Paint = function(a)
+            t[1].Paint = function()
                 draw.RoundedBox(3, 0, 0, 100, 100, Color(255, 255, 255, 100))
             end
 
@@ -634,7 +641,7 @@ function TOOL:Think()
             t[2]:SetMin(0)
             t[2]:SetValue(50)
 
-            t[2].Paint = function(a)
+            t[2].Paint = function()
                 draw.RoundedBox(3, 0, 0, 100, 100, Color(255, 255, 255, 100))
             end
 
@@ -725,7 +732,7 @@ if SERVER then
     util.AddNetworkString("Inf_MoveA")
     util.AddNetworkString("Inf_Move")
 
-    net.Receive("Inf_MoveP", function(len, ply)
+    net.Receive("Inf_MoveP", function()
         local _, _, _, EntInd, Vec = net.ReadInt(3), net.ReadInt(3), net.ReadInt(1), net.ReadInt(12), Vector(net.ReadFloat(), net.ReadFloat(), net.ReadFloat())
         local ent = ents.GetByIndex(EntInd)
         ent:SetPos(Vec)
@@ -736,7 +743,7 @@ if SERVER then
         end
     end)
 
-    net.Receive("Inf_Move", function(len, ply)
+    net.Receive("Inf_Move", function(_, ply)
         local _, _, Copy, EntInd, Vec = net.ReadInt(3), net.ReadInt(3), net.ReadInt(2), net.ReadInt(12), net.ReadVector()
         local ang = net.ReadAngle()
         local ent = ents.GetByIndex(EntInd)
@@ -785,13 +792,13 @@ if SERVER then
             undo.Create("Mover")
             undo.SetPlayer(ply)
 
-            undo.AddFunction(function(tbl, e, pos, _)
+            undo.AddFunction(function(_, e, pos, undoAng)
                 if e:IsValid() == false then return end
                 local par = e:GetParent()
 
                 if par == NULL then
                     e:SetPos(pos)
-                    e:SetAngles(ang)
+                    e:SetAngles(undoAng)
                     local phys = e:GetPhysicsObject()
 
                     if phys:IsValid() then
@@ -801,7 +808,7 @@ if SERVER then
                 else
                     e:SetParent()
                     e:SetPos(pos)
-                    e:SetAngles(ang)
+                    e:SetAngles(undoAng)
                     local phys = e:GetPhysicsObject()
 
                     if phys:IsValid() then
@@ -826,7 +833,7 @@ if SERVER then
         end
     end)
 
-    net.Receive("Inf_MoveA", function(len, ply)
+    net.Receive("Inf_MoveA", function()
         local ent, ang = ents.GetByIndex(net.ReadInt(12)), Angle(net.ReadFloat(), net.ReadFloat(), net.ReadFloat())
         local phys = ent:GetPhysicsObject()
         ent:SetAngles(ang)
@@ -839,7 +846,7 @@ end
 
 function TOOL:Reload()
     if SERVER then
-        if game.SinglePlayer() == true then
+        if isSingleplayer then
             net.Start(self.Name .. "_R")
             net.Send(player.GetHumans()[1])
         end
@@ -860,7 +867,7 @@ end
 TOOL.Lat = NULL
 TOOL.AABB = {}
 
-function TOOL:GetSign(a, b, c, d)
+function TOOL:GetSign(a, b)
     local tmp = a + Vector()
 
     if b == 2 then
@@ -885,12 +892,13 @@ function TOOL:GetSign(a, b, c, d)
 end
 
 function TOOL:ToScreen2(v, v1)
+    local owner = self:GetOwner()
     local cPos, cAng, cFov, scrW, scrH
 
     if v1 == nil then
-        cPos, cAng, cFov, scrW, scrH = v - self.Owner:EyePos(), self.Owner:EyeAngles(), self.Owner:GetFOV() / 180 * math.pi, ScrW(), ScrH()
+        cPos, cAng, cFov, scrW, scrH = v - owner:EyePos(), owner:EyeAngles(), owner:GetFOV() / 180 * math.pi, ScrW(), ScrH()
     else
-        cPos, cAng, cFov, scrW, scrH = v - self.Owner:EyePos(), self.Owner:EyeAngles(), self.Owner:GetFOV() / 180 * math.pi, ScrW(), ScrH()
+        cPos, cAng, cFov, scrW, scrH = v - owner:EyePos(), owner:EyeAngles(), owner:GetFOV() / 180 * math.pi, ScrW(), ScrH()
     end
 
     local vDir = cAng:Forward()
@@ -932,7 +940,9 @@ TOOL.Hold = false
 TOOL.UseSnap = false
 
 function TOOL:Hud1()
-    if self.Hold == true and self.Owner:KeyDown(IN_ATTACK2) == false then
+    local owner = self:GetOwner()
+
+    if self.Hold == true and owner:KeyDown(IN_ATTACK2) == false then
         self.Hold = false
     end
 
@@ -940,7 +950,7 @@ function TOOL:Hud1()
         self.lat.act = false
     end
 
-    self.UseSnap = self.Owner:KeyDown(IN_SPEED)
+    self.UseSnap = owner:KeyDown(IN_SPEED)
 
     if JG.stools.Data.mover.Ent ~= NULL then
         local pos = JG.stools.Data.mover.BasePos == NULL and JG.stools.Data.mover.Ent:GetPos() or JG.stools.Data.mover.BasePos
@@ -952,7 +962,7 @@ function TOOL:Hud1()
 
         local Ang = JG.stools.Data.mover.Ent:GetAngles()
         local Vec2, Vec1 = {}, pos + Vector()
-        self.dist = (Vec1 - self.Owner:EyePos()):Length()
+        self.dist = (Vec1 - owner:EyePos()):Length()
         local Vec2_2 = self:ToScreen2(Vec1)
         local font = "ChatFont"
         local dot = {}
@@ -1056,35 +1066,35 @@ function TOOL:Hud1()
                 if self.UseSnap then
                     if self.AngS == 1 then
                         surface.DrawLine(Vec2_2.x, Vec2_2.y, val.x, val.y)
-                        local val2 = (self:IntersectRayWithPlane(self.lat.pos, JG.stools.Data.mover.Ent:GetForward(), self.Owner:EyePos(), self.Owner:EyeAngles():Forward()) - self.lat.pos)
+                        local val2 = (self:IntersectRayWithPlane(self.lat.pos, JG.stools.Data.mover.Ent:GetForward(), owner:EyePos(), owner:EyeAngles():Forward()) - self.lat.pos)
                         val = self:ToScreen2(Vec1 + val2:GetNormalized() * 2 * dis)
                         surface.SetDrawColor(Color(255, 0, 0, 255))
                         surface.DrawLine(Vec2_2.x, Vec2_2.y, val.x, val.y)
                     elseif self.AngS == 2 then
                         surface.DrawLine(Vec2_2.x, Vec2_2.y, val.x, val.y)
-                        val = self:ToScreen2(Vec1 + (self:IntersectRayWithPlane(self.lat.pos, JG.stools.Data.mover.Ent:GetRight(), self.Owner:EyePos(), self.Owner:EyeAngles():Forward()) - self.lat.pos):GetNormalized() * 2 * dis)
+                        val = self:ToScreen2(Vec1 + (self:IntersectRayWithPlane(self.lat.pos, JG.stools.Data.mover.Ent:GetRight(), owner:EyePos(), owner:EyeAngles():Forward()) - self.lat.pos):GetNormalized() * 2 * dis)
                         surface.SetDrawColor(Color(0, 255, 0, 255))
                         surface.DrawLine(Vec2_2.x, Vec2_2.y, val.x, val.y)
                     elseif self.AngS == 3 then
                         surface.DrawLine(Vec2_2.x, Vec2_2.y, val.x, val.y)
-                        val = self:ToScreen2(Vec1 + (self:IntersectRayWithPlane(self.lat.pos, JG.stools.Data.mover.Ent:GetUp(), self.Owner:EyePos(), self.Owner:EyeAngles():Forward()) - self.lat.pos):GetNormalized() * 2 * dis)
+                        val = self:ToScreen2(Vec1 + (self:IntersectRayWithPlane(self.lat.pos, JG.stools.Data.mover.Ent:GetUp(), owner:EyePos(), owner:EyeAngles():Forward()) - self.lat.pos):GetNormalized() * 2 * dis)
                         surface.SetDrawColor(Color(0, 0, 255, 255))
                         surface.DrawLine(Vec2_2.x, Vec2_2.y, val.x, val.y)
                     end
                 else
                     if self.AngS == 1 then
                         surface.DrawLine(Vec2_2.x, Vec2_2.y, val.x, val.y)
-                        val = self:ToScreen2(Vec1 + (self:IntersectRayWithPlane(self.lat.pos, JG.stools.Data.mover.Ent:GetForward(), self.Owner:EyePos(), self.Owner:EyeAngles():Forward()) - self.lat.pos):GetNormalized() * 2 * dis)
+                        val = self:ToScreen2(Vec1 + (self:IntersectRayWithPlane(self.lat.pos, JG.stools.Data.mover.Ent:GetForward(), owner:EyePos(), owner:EyeAngles():Forward()) - self.lat.pos):GetNormalized() * 2 * dis)
                         surface.SetDrawColor(Color(255, 0, 0, 255))
                         surface.DrawLine(Vec2_2.x, Vec2_2.y, val.x, val.y)
                     elseif self.AngS == 2 then
                         surface.DrawLine(Vec2_2.x, Vec2_2.y, val.x, val.y)
-                        val = self:ToScreen2(Vec1 + (self:IntersectRayWithPlane(self.lat.pos, JG.stools.Data.mover.Ent:GetRight(), self.Owner:EyePos(), self.Owner:EyeAngles():Forward()) - self.lat.pos):GetNormalized() * 2 * dis)
+                        val = self:ToScreen2(Vec1 + (self:IntersectRayWithPlane(self.lat.pos, JG.stools.Data.mover.Ent:GetRight(), owner:EyePos(), owner:EyeAngles():Forward()) - self.lat.pos):GetNormalized() * 2 * dis)
                         surface.SetDrawColor(Color(0, 255, 0, 255))
                         surface.DrawLine(Vec2_2.x, Vec2_2.y, val.x, val.y)
                     elseif self.AngS == 3 then
                         surface.DrawLine(Vec2_2.x, Vec2_2.y, val.x, val.y)
-                        val = self:ToScreen2(Vec1 + (self:IntersectRayWithPlane(self.lat.pos, JG.stools.Data.mover.Ent:GetUp(), self.Owner:EyePos(), self.Owner:EyeAngles():Forward()) - self.lat.pos):GetNormalized() * 2 * dis)
+                        val = self:ToScreen2(Vec1 + (self:IntersectRayWithPlane(self.lat.pos, JG.stools.Data.mover.Ent:GetUp(), owner:EyePos(), owner:EyeAngles():Forward()) - self.lat.pos):GetNormalized() * 2 * dis)
                         surface.SetDrawColor(Color(0, 0, 255, 255))
                         surface.DrawLine(Vec2_2.x, Vec2_2.y, val.x, val.y)
                     end
@@ -1094,17 +1104,17 @@ function TOOL:Hud1()
 
                 if self.AngS == 1 then
                     surface.DrawLine(Vec2_2.x, Vec2_2.y, val.x, val.y)
-                    val = self:ToScreen2(Vec1 + (self:IntersectRayWithPlane(self.lat.pos, World.x, self.Owner:EyePos(), self.Owner:EyeAngles():Forward()) - self.lat.pos):GetNormalized() * 2 * dis)
+                    val = self:ToScreen2(Vec1 + (self:IntersectRayWithPlane(self.lat.pos, World.x, owner:EyePos(), owner:EyeAngles():Forward()) - self.lat.pos):GetNormalized() * 2 * dis)
                     surface.SetDrawColor(Color(255, 0, 0, 255))
                     surface.DrawLine(Vec2_2.x, Vec2_2.y, val.x, val.y)
                 elseif self.AngS == 2 then
                     surface.DrawLine(Vec2_2.x, Vec2_2.y, val.x, val.y)
-                    val = self:ToScreen2(Vec1 + (self:IntersectRayWithPlane(self.lat.pos, World.y, self.Owner:EyePos(), self.Owner:EyeAngles():Forward()) - self.lat.pos):GetNormalized() * 2 * dis)
+                    val = self:ToScreen2(Vec1 + (self:IntersectRayWithPlane(self.lat.pos, World.y, owner:EyePos(), owner:EyeAngles():Forward()) - self.lat.pos):GetNormalized() * 2 * dis)
                     surface.SetDrawColor(Color(0, 255, 0, 255))
                     surface.DrawLine(Vec2_2.x, Vec2_2.y, val.x, val.y)
                 elseif self.AngS == 3 then
                     surface.DrawLine(Vec2_2.x, Vec2_2.y, val.x, val.y)
-                    val = self:ToScreen2(Vec1 + (self:IntersectRayWithPlane(self.lat.pos, World.z, self.Owner:EyePos(), self.Owner:EyeAngles():Forward()) - self.lat.pos):GetNormalized() * 2 * dis)
+                    val = self:ToScreen2(Vec1 + (self:IntersectRayWithPlane(self.lat.pos, World.z, owner:EyePos(), owner:EyeAngles():Forward()) - self.lat.pos):GetNormalized() * 2 * dis)
                     surface.SetDrawColor(Color(0, 0, 255, 255))
                     surface.DrawLine(Vec2_2.x, Vec2_2.y, val.x, val.y)
                 end
@@ -1308,14 +1318,14 @@ TOOL.ratio = 0
 
 function TOOL:Hud2()
     local SW, SH = ScrW(), ScrH()
-    local hSW, hSH = SW / 2, SH / 2
-    local font, col = "ChatFont", Color(200, 0, 0, 240)
+    local hSW, hSH = SW / 2, SH / 4
+    -- local font, col = "ChatFont", Color(200, 0, 0, 240)
     local TAC = TEXT_ALIGN_CENTER
 
     if not PA_funcs then
         local col2 = Color((math.sin(SysTime() * 2) + 1) * 127.5, 0, 0)
-        draw.SimpleText("WARNING: Precision Alignment not loaded! Some features may not function properly!", "Trebuchet24", hSW, ScrH() / 4, col2, TAC)
-        draw.SimpleText("Open the Precision Alignment tool at least once before using this tool.", "Trebuchet24", hSW, ScrH() / 4 + 20, col2, TAC)
+        draw.SimpleText("WARNING: Precision Alignment not loaded! Some features may not function properly!", "Trebuchet24", hSW, hSH, col2, TAC)
+        draw.SimpleText("Open the Precision Alignment tool at least once before using this tool.", "Trebuchet24", hSW, hSH + 20, col2, TAC)
     end
 end
 
