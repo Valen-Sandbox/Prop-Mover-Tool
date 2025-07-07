@@ -76,6 +76,7 @@ function TOOL:LeftClick(trace)
         if JG.stools.Data.mover.Ent ~= NULL then
             JG.stools.CP.mover.DAdjustableModelPanel[1]:SetModel(JG.stools.Data.mover.Ent:GetModel())
             JG.stools.CP.mover.DLabel[1]:SetText(JG.stools.Data.mover.Ent:GetModel())
+            JG.stools.CP.mover.DLabel[1]:SizeToContents()
             JG.stools.Data.mover.Ent:SetRenderMode(1)
         end
     end
@@ -440,7 +441,7 @@ function TOOL:Think()
             GAMEMODE:AddNotify("Successfully Sent", NOTIFY_HINT, 5)
             surface.PlaySound("buttons/button15.wav")
         else
-            GAMEMODE:AddNotify("Failed : Abonormal Pos", NOTIFY_ERROR, 5)
+            GAMEMODE:AddNotify("Failed : Abnormal Pos", NOTIFY_ERROR, 5)
             surface.PlaySound("buttons/button10.wav")
         end
 
@@ -500,7 +501,7 @@ function TOOL:Think()
             self.panel = controlpanel.Get("mover")
 
             if self.panel:GetInitialized() == false or (g_SpawnMenu:IsVisible() == false and g_ContextMenu:IsVisible() == false) then
-                timer.Simple(0.5, function()
+                timer.Simple(0.01, function()
                     RunConsoleCommand("mover_reloadui")
                 end)
 
@@ -531,8 +532,10 @@ function TOOL:Think()
 
             JG.stools.CP.mover.DComboBox = {}
             local t = JG.stools.CP.mover.DComboBox
+            local baseY = 30
+
             t[1] = vgui.Create("DComboBox", self.panel)
-            t[1]:SetPos(10, 100)
+            t[1]:SetPos(10, baseY)
             t[1]:SetSize(90, 25)
             t[1]:SetValue("Local")
             t[1]:AddChoice("World")
@@ -549,7 +552,7 @@ function TOOL:Think()
             JG.stools.CP.mover.DCheckBox = {}
             t = JG.stools.CP.mover.DCheckBox
             t[1] = vgui.Create("DCheckBoxLabel", self.panel)
-            t[1]:SetPos(10, 135)
+            t[1]:SetPos(10, baseY + 35)
             t[1]:SetSize(130, 20)
             t[1]:SetText("Rotate - Point")
             t[1]:SetTooltip("Uses Axis function from Precision Alignment.\nYou may rotate props by grabbing axis.")
@@ -568,7 +571,7 @@ function TOOL:Think()
             end
 
             t[2] = vgui.Create("DCheckBoxLabel", self.panel)
-            t[2]:SetPos(10, 285)
+            t[2]:SetPos(10, baseY + 185)
             t[2]:SetSize(130, 20)
             t[2]:SetText("Copy - DeActive")
             t[2].Label:SetTextColor(Color(255, 0, 0, 255))
@@ -590,11 +593,11 @@ function TOOL:Think()
             t = JG.stools.CP.mover.Binder
             t[1] = vgui.Create("DBinder", self.panel)
             t[1]:SetSize(90, 40)
-            t[1]:SetPos(10, 160)
+            t[1]:SetPos(10, baseY + 60)
             JG.stools.CP.mover.Buttons = {}
             t = JG.stools.CP.mover.Buttons
             t[1] = vgui.Create("DButton", self.panel)
-            t[1]:SetPos(10, 200)
+            t[1]:SetPos(10, baseY + 100)
             t[1]:SetSize(90, 40)
             t[1]:SetText("Reset BasePos")
 
@@ -604,7 +607,7 @@ function TOOL:Think()
 
             t = JG.stools.CP.mover.Buttons
             t[2] = vgui.Create("DButton", self.panel)
-            t[2]:SetPos(10, 240)
+            t[2]:SetPos(10, baseY + 140)
             t[2]:SetSize(90, 40)
             t[2]:SetText("Reset Ent Info")
 
@@ -615,7 +618,7 @@ function TOOL:Think()
             JG.stools.CP.mover.DNumSlider = {}
             t = JG.stools.CP.mover.DNumSlider
             t[1] = vgui.Create("DNumSlider", self.panel)
-            t[1]:SetPos(10, 300)
+            t[1]:SetPos(10, baseY + 200)
             t[1]:SetText("Snap Amount Deg")
             t[1]:SetSize(240, 30)
             t[1].Label:SetSize(90)
@@ -625,30 +628,39 @@ function TOOL:Think()
             t[1]:SetMin(0)
             t[1]:SetValue(45)
 
-            t[1].Paint = function()
+            --[[t[1].Paint = function()
                 draw.RoundedBox(3, 0, 0, 100, 100, Color(255, 255, 255, 100))
-            end
+            end]]
 
             t = JG.stools.CP.mover.DNumSlider
             t[2] = vgui.Create("DNumSlider", self.panel)
-            t[2]:SetPos(10, 330)
+            t[2]:SetPos(10, baseY + 230)
             t[2]:SetText("Snap Amount Pos")
             t[2]:SetSize(240, 30)
             t[2].Label:SetSize(90)
-            t[2].Label:SetTextColor(Color(0, 0, 0, 255))
+            --t[2].Label:SetTextColor(Color(0, 0, 0, 255))
             t[2]:SetDecimals(1)
             t[2]:SetMax(100)
             t[2]:SetMin(0)
             t[2]:SetValue(50)
 
-            t[2].Paint = function()
+            --[[t[2].Paint = function()
                 draw.RoundedBox(3, 0, 0, 100, 100, Color(255, 255, 255, 100))
-            end
+            end]]
+
+            JG.stools.CP.mover.DLabel = {}
+            t = JG.stools.CP.mover.DLabel
+            t[1] = vgui.Create("DLabel", self.panel)
+            t[1]:SetPos(10, baseY + 260)
+            t[1]:SetSize(10, 10)
+            t[1]:SetText("Default")
+            t[1]:SizeToContents()
+            t[1]:SetPaintBackground(true)
 
             JG.stools.CP.mover.DPanel = {}
             t = JG.stools.CP.mover.DPanel
             t[1] = vgui.Create("DPanel", self.panel)
-            t[1]:SetPos(10, 360)
+            t[1]:SetPos(10, baseY + 290)
             local val = self.panel:GetSize()
             t[1]:SetSize(val - 20, 300)
 
@@ -667,16 +679,8 @@ function TOOL:Think()
             t[1] = vgui.Create("DModelPanel", JG.stools.CP.mover.DPanel[1])
             t[1]:SetPos(0, 0)
             t[1]:SetSize(200, 200)
-            t[1]:SetLookAt(Vector(0, 0, 0))
+            t[1]:SetLookAt(vector_origin)
             t[1]:SetModel("models/props_borealis/bluebarrel001.mdl")
-            JG.stools.CP.mover.DLabel = {}
-            t = JG.stools.CP.mover.DLabel
-            t[1] = vgui.Create("DLabel", JG.stools.CP.mover.DPanel[1])
-            t[1]:SetPos(10, 60)
-            t[1]:SetSize(10, 10)
-            t[1]:SetText("Default")
-            t[1]:SizeToContents()
-            t[1]:SetPaintBackground(true)
 
             local params = {
                 ["$basetexture"] = "models/debug/debugwhite",
