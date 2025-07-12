@@ -691,7 +691,7 @@ function TOOL:Think()
 
             hook.Add("PostDrawTranslucentRenderables", "Mover_Render", function()
                 local ent = JG.stools.Data.mover.Ent
-                if ent == NULL then return end
+                if not IsValid(ent) then return end
                 local wep = LocalPlayer():GetActiveWeapon()
 
                 if wep:IsValid() == false then
@@ -956,7 +956,7 @@ function TOOL:Hud1()
 
     self.UseSnap = owner:KeyDown(IN_SPEED)
 
-    if JG.stools.Data.mover.Ent ~= NULL then
+    if IsValid(JG.stools.Data.mover.Ent) then
         local pos = JG.stools.Data.mover.BasePos == NULL and JG.stools.Data.mover.Ent:GetPos() or JG.stools.Data.mover.BasePos
 
         if self.Lat ~= JG.stools.Data.mover.Ent then
